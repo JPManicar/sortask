@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 
 class Project(models.Model):
@@ -7,6 +8,11 @@ class Project(models.Model):
     description = models.TextField()
     created_by = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name='created_projects')
+
+
+class ProjectInvitation(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
 
 
 class Board(models.Model):

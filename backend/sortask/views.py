@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Project, Board, Task, CheckList, Comment, Member
+from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member
 from .serializers import (ProjectSerializer, ProjectListSerializer, BoardSerializer, TaskSerializer,
                           CheckListSerializer, CommentSerializer, MemberSerializer)
 
@@ -28,6 +28,22 @@ class ProjectViewSet(ModelViewSet):
         Member.objects.create(project=project, member=request.user)
 
         return Response({'message': 'Member added successfully'}, status=status.HTTP_201_CREATED)
+
+    def create_invitation(self, request, project_id):
+        project = Project.objects.filter(id=project_id).first()
+        if not project:
+            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        invitation = ProjectInvitation.objects.filter(
+            project_id=project_id).first()
+
+        base_url = request.build_absolute_uri('/')
+
+        if not invitation:
+            invitation = ProjectInvitation.objects.create(
+                project_id=project_id)
+
+        return Response({'invitation_link': f'{base_url}/v1/accept-invite/{invitation.token}'})
 
     def get_serializer_class(self):
         return ProjectListSerializer if self.action == 'list' else ProjectSerializer

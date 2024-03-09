@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Project, Board, Task, CheckList, Comment, Member
+from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -11,6 +11,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+
+
+class ProjectInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectInvitation
+        fields = ['token']
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
