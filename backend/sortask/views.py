@@ -7,7 +7,6 @@ from .serializers import (ProjectSerializer, ProjectListSerializer, BoardSeriali
 
 class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
