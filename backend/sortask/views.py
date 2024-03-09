@@ -15,7 +15,15 @@ class ProjectViewSet(ModelViewSet):
         return ProjectListSerializer if self.action == 'list' else ProjectSerializer
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        instance = serializer.save(created_by=self.request.user)
+
+        # Add creator as member of a project
+        Member.objects.create(project=instance, user=self.request.user)
+
+        # Add default project boards
+        instance.create_default_boards()
+
+        return instance
 
     def get_queryset(self):
         user = self.request.user

@@ -9,6 +9,13 @@ class Project(models.Model):
     created_by = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name='created_projects')
 
+    def create_default_boards(self):
+        Board.objects.bulk_create([
+            Board(project=self, name='Backlog'),
+            Board(project=self, name='In Progress'),
+            Board(project=self, name='Done'),
+        ])
+
 
 class ProjectInvitation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
