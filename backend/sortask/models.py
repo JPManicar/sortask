@@ -6,7 +6,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_by = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name='projects')
+        get_user_model(), on_delete=models.CASCADE, related_name='created_projects')
 
 
 class Board(models.Model):
@@ -36,7 +36,7 @@ class CheckList(models.Model):
         Task, on_delete=models.CASCADE, related_name='checklists')
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     content = models.TextField()
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     task = models.ForeignKey(
@@ -45,7 +45,7 @@ class Comments(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Members(models.Model):
+class Member(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name='members')
     user = models.ForeignKey(

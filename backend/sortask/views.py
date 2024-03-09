@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
-from .models import Project, Board, Task, Checklist,  Comment, Member
+from .models import Project, Board, Task, CheckList, Comment, Member
 from .serializers import (ProjectSerializer, BoardSerializer, TaskSerializer,
-                          ChecklistSerializer, CommentSerializer, MemberSerializer)
+                          CheckListSerializer, CommentSerializer, MemberSerializer)
 
 
 class ProjectViewSet(ModelViewSet):
@@ -20,8 +20,8 @@ class TaskViewSet(ModelViewSet):
 
 
 class ChecklistViewSet(ModelViewSet):
-    queryset = Checklist.objects.all()
-    serializer_class = ChecklistSerializer
+    queryset = CheckList.objects.all()
+    serializer_class = CheckListSerializer
 
 
 class CommentViewSet(ModelViewSet):

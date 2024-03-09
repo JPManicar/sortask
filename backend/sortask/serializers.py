@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Board, Task, CheckList, Comments, Members
+from .models import Project, Board, Task, CheckList, Comment, Member
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -28,11 +28,11 @@ class CheckListSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Comments
+        model = Comment
         fields = '__all__'
 
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Members
+        model = Member
         fields = '__all__'
