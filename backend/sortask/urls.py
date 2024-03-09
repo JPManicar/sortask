@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework_nested import routers
-from .views import (ProjectViewSet, BoardViewSet, TaskViewSet,
+from .views import (ProjectViewSet, ProjectInvitationViewSet, BoardViewSet, TaskViewSet,
                     ChecklistViewSet, CommentViewSet, MemberViewSet)
 
 router = routers.SimpleRouter()
@@ -22,6 +22,10 @@ tasks_router.register(r'comments', CommentViewSet, basename='task-comments')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('projects/<int:project_id>/invite/',
+         ProjectInvitationViewSet.as_view({'get': 'get_invite_link'}), name='project_invite'),
+    path('accept-invite/<str:token>/',
+         ProjectInvitationViewSet.as_view({'get': 'accept_invite'}), name='accept_invite'),
     path('', include(projects_router.urls)),
     path('', include(tasks_router.urls)),
 ]
