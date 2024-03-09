@@ -64,7 +64,7 @@ class ProjectInvitationViewSet(ViewSet):
             invitation = ProjectInvitation.objects.create(
                 project_id=project_id)
 
-        return Response({'invitation_link': f'{base_url}/v1/accept-invite/{invitation.token}'})
+        return Response({'invitation_link': f'{base_url}v1/accept-invite/{invitation.token}'})
 
 
 class BoardViewSet(ModelViewSet):

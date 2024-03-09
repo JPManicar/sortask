@@ -22,10 +22,15 @@ tasks_router.register(r'comments', CommentViewSet, basename='task-comments')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('projects/<int:project_id>/invite/',
-         ProjectInvitationViewSet.as_view({'get': 'get_invite_link'}), name='project_invite'),
-    path('accept-invite/<str:token>/',
-         ProjectInvitationViewSet.as_view({'get': 'accept_invite'}), name='accept_invite'),
     path('', include(projects_router.urls)),
     path('', include(tasks_router.urls)),
+
+    # Get Project Invite Link
+    path('projects/<int:project_id>/invite/',
+         ProjectInvitationViewSet.as_view({'get': 'get_invite_link'}), name='project_invite'),
+
+    # Accept Project Invite Link
+    path('accept-invite/<str:token>/',
+         ProjectInvitationViewSet.as_view({'get': 'accept_invite'}), name='accept_invite'),
+
 ]
