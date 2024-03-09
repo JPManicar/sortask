@@ -1,11 +1,22 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import Project, Board, Task, CheckList, Comment, Member
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=get_user_model().objects.all())
+
     class Meta:
         model = Project
         fields = '__all__'
+
+
+class ProjectListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title']
 
 
 class BoardSerializer(serializers.ModelSerializer):

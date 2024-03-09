@@ -4,6 +4,7 @@ from .views import (ProjectViewSet, BoardViewSet, TaskViewSet,
                     ChecklistViewSet, CommentViewSet, MemberViewSet)
 
 router = routers.SimpleRouter()
+
 router.register('projects', ProjectViewSet)
 router.register('tasks', TaskViewSet)
 

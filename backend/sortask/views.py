@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from .models import Project, Board, Task, CheckList, Comment, Member
-from .serializers import (ProjectSerializer, BoardSerializer, TaskSerializer,
+from .serializers import (ProjectSerializer, ProjectListSerializer, BoardSerializer, TaskSerializer,
                           CheckListSerializer, CommentSerializer, MemberSerializer)
 
 
@@ -9,6 +9,16 @@ class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        return ProjectListSerializer if self.action == 'list' else ProjectSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+        return Project.objects.filter(created_by=user)
 
 
 class BoardViewSet(ModelViewSet):
