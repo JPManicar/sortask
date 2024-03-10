@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework_nested import routers
-from .views import (ProjectViewSet, ProjectInvitationViewSet, BoardViewSet, TaskViewSet,
-                    ChecklistViewSet, CommentViewSet, MemberViewSet)
+from sortask.views import *
 
 router = routers.SimpleRouter()
 
