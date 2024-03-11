@@ -32,9 +32,19 @@ class BoardSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=get_user_model().objects.all())
+
     class Meta:
         model = Task
         fields = '__all__'
+
+
+class TaskListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'board', 'assignee']
 
 
 class CheckListSerializer(serializers.ModelSerializer):
