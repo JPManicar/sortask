@@ -30,10 +30,10 @@ class Board(models.Model):
 
 class Task(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     board = models.ForeignKey(
         Board, on_delete=models.CASCADE, related_name='tasks')
-    due_date = models.DateTimeField()
+    due_date = models.DateTimeField(null=True, blank=True)
     assignee = models.ForeignKey(get_user_model(),
                                  related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True)
     created_by = models.ForeignKey(
