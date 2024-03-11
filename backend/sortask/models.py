@@ -31,6 +31,8 @@ class Board(models.Model):
 class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='tasks')
     board = models.ForeignKey(
         Board, on_delete=models.CASCADE, related_name='tasks')
     due_date = models.DateTimeField(null=True, blank=True)
