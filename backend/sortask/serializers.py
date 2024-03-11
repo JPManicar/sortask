@@ -36,9 +36,30 @@ class TaskSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         queryset=get_user_model().objects.all())
 
+    board = serializers.PrimaryKeyRelatedField(
+        queryset=Board.objects.all()  # Limit allowed boards
+    )
+
     class Meta:
         model = Task
         fields = '__all__'
+
+    def validate_board(self, value):
+        if not value:
+            raise serializers.ValidationError("A board is required")
+
+        task = self.instance
+        project = getattr(task, 'project', None)
+
+        if not project:
+            raise serializers.ValidationError(
+                "Project information not available")
+
+        if value not in project.boards.all():
+            raise serializers.ValidationError(
+                "Board does not belong to the project")
+
+        return value
 
 
 class TaskListSerializer(serializers.ModelSerializer):
