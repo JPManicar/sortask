@@ -44,6 +44,15 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = '__all__'
 
+    def validate(self, data):
+        project = data.get('project')
+        board = data.get('board')
+        if project and board:
+            if board.project != project:
+                raise serializers.ValidationError(
+                    'Board must belong to the assigned project.')
+        return data
+
 
 class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
