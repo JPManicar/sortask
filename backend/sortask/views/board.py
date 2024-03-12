@@ -21,6 +21,9 @@ class BoardViewSet(ModelViewSet):
             if response:
                 return response
 
+            serializer.save(project_id=self.kwargs['project_pk'])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         else:
             default_errors = serializer.errors
             new_error = {}
@@ -34,11 +37,19 @@ class BoardViewSet(ModelViewSet):
         if response:
             return response
 
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+
+        return Response(serializer.data)
+
     def retrieve(self, request, project_pk):
         response = check_permission(self.request.user, project_pk)
 
         if response:
             return response
+
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         response = check_permission(
@@ -47,9 +58,7 @@ class BoardViewSet(ModelViewSet):
         if response:
             return response
 
-    def perform_create(self, serializer):
-        project_id = self.kwargs['project_pk']
-        serializer.save(project_id=project_id)
+        return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
         project_id = self.kwargs['project_pk']
