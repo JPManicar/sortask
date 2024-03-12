@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 from ..models import Project, Member
 from ..serializers import ProjectSerializer, ProjectListSerializer
 
@@ -24,4 +25,9 @@ class ProjectViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Project.objects.filter(created_by=user)
+
+        # filter project if user is the creator or a member of
+        projects = Project.objects.filter(
+            Q(created_by=user) | Q(members__user=user))
+
+        return projects
