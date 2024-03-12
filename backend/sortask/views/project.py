@@ -27,7 +27,6 @@ class ProjectViewSet(ModelViewSet):
         user = self.request.user
 
         # filter project if user is the creator or a member of
-        projects = Project.objects.filter(
-            Q(created_by=user) | Q(members__user=user))
+        projects = Project.objects.filter(members__user=user)
 
         return projects
