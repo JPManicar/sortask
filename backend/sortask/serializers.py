@@ -44,23 +44,6 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = '__all__'
 
-    def validate_board(self, value):
-        if not value:
-            raise serializers.ValidationError("A board is required")
-
-        task = self.instance
-        project = getattr(task, 'project', None)
-
-        if not project:
-            raise serializers.ValidationError(
-                "Project information not available")
-
-        if value not in project.boards.all():
-            raise serializers.ValidationError(
-                "Board does not belong to the project")
-
-        return value
-
 
 class TaskListSerializer(serializers.ModelSerializer):
     class Meta:

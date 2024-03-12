@@ -1,3 +1,5 @@
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from ..models import Task
@@ -12,12 +14,27 @@ class TaskViewSet(ModelViewSet):
     def get_serializer_class(self):
         return TaskListSerializer if self.action == 'list' else TaskSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'status': 'Successful'
+            }, status=status.HTTP_201_CREATED)
+        else:
+            default_errors = serializer.errors
+            new_error = {}
+            for field_name, field_errors in default_errors.items():
+                new_error[field_name] = field_errors[0]
+            return Response(new_error, status=status.HTTP_400_BAD_REQUEST)
+
     def perform_create(self, serializer):
         instance = serializer.save(created_by=self.request.user)
 
         return instance
 
     def get_queryset(self):
+        queryset = Task.objects.all()
         project_id = self.request.query_params.get('project_id')
         if project_id:
             queryset = queryset.filter(project=project_id)
