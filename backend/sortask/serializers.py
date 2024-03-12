@@ -1,34 +1,19 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member
+from typing import Optional, List
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(
-        default=serializers.CurrentUserDefault(),
-        queryset=get_user_model().objects.all())
-
+class CheckListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Project
+        model = CheckList
         fields = '__all__'
 
 
-class ProjectInvitationSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProjectInvitation
-        fields = ['token']
-
-
-class ProjectListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ['id', 'title']
-
-
-class BoardSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Board
-        fields = ['id', 'name']
+        model = Comment
+        fields = '__all__'
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -60,16 +45,43 @@ class TaskListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'board', 'assignee']
 
 
-class CheckListSerializer(serializers.ModelSerializer):
+class BoardAndTaskSerializer(serializers.ModelSerializer):
+    tasks = TaskListSerializer(many=True, read_only=True)
+
     class Meta:
-        model = CheckList
+        model = Board
+        fields = ['id', 'name', 'tasks']
+
+
+class BoardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Board
+        fields = ['id', 'name']
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=get_user_model().objects.all())
+
+    boards = BoardAndTaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Project
         fields = '__all__'
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class ProjectInvitationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Comment
-        fields = '__all__'
+        model = ProjectInvitation
+        fields = ['token']
+
+
+class ProjectListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title']
 
 
 class MemberSerializer(serializers.ModelSerializer):
