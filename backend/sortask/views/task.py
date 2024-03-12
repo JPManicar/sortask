@@ -34,15 +34,17 @@ class TaskViewSet(ModelViewSet):
         return instance
 
     def get_queryset(self):
-        queryset = Task.objects.all()
+        queryset = Task.objects.none()
         project_id = self.request.query_params.get('project_id')
         if project_id:
-            queryset = queryset.filter(project=project_id)
+            queryset = queryset.union(Task.objects.filter(
+                project=project_id, project__members__user=self.request.user))
 
         assignee_ids = self.request.query_params.getlist('assignee_ids')
         if assignee_ids:
             # Convert string list to integer list for filtering
             assignee_ids = [int(id) for id in assignee_ids]
-            queryset = queryset.filter(assignee__id__in=assignee_ids)
+            queryset = queryset.union(
+                Task.objects.filter(assignee__id__in=assignee_ids))
 
         return queryset
