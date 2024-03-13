@@ -25,9 +25,32 @@ class TaskSerializer(serializers.ModelSerializer):
         queryset=Board.objects.all()  # Limit allowed boards
     )
 
+    assignee = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.all(), required=False)
+
     class Meta:
         model = Task
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')  # Access the request object
+
+        if not request:
+            return
+
+        assignee = request.data.get('assignee')
+        project = request.data.get('project')
+
+        if not assignee or not project:
+            return
+
+        has_permission = Member.objects.filter(
+            user_id=assignee, project_id=project).exists()
+
+        if not has_permission:
+            raise serializers.ValidationError(
+                {"assignee": "Assigned user is not a member of the project."})
 
     def validate(self, data):
         project = data.get('project')
