@@ -4,7 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from ..models import Task
 from ..serializers import TaskSerializer, TaskListSerializer
-from ..permissions import check_permission
+from ..utils import check_permission, check_project_id
 
 
 class TaskViewSet(ModelViewSet):
@@ -14,12 +14,6 @@ class TaskViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         return TaskListSerializer if self.action == 'list' else TaskSerializer
-
-    def check_project_id(self, request):
-        project_id = request.query_params.get('project_id')
-        if not project_id:
-            return Response({'error': 'parameter project_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-        return project_id
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -43,7 +37,7 @@ class TaskViewSet(ModelViewSet):
             return Response(new_error, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request):
-        project_id = self.check_project_id(request)
+        project_id = check_project_id(request)
 
         if isinstance(project_id, Response):
             return project_id
@@ -58,7 +52,7 @@ class TaskViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
-        project_id = self.check_project_id(request)
+        project_id = check_project_id(request)
 
         if isinstance(project_id, Response):
             return project_id
@@ -80,7 +74,7 @@ class TaskViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = Task.objects.none()
 
-        project_id = self.check_project_id(self.request)
+        project_id = check_project_id(self.request)
         if isinstance(project_id, Response):
             return project_id
 
@@ -97,7 +91,7 @@ class TaskViewSet(ModelViewSet):
         return queryset
 
     def destroy(self, request):
-        project_id = self.check_project_id(request)
+        project_id = check_project_id(request)
 
         if isinstance(project_id, Response):
             return project_id
