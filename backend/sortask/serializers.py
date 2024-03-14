@@ -1,10 +1,14 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member
 from typing import Optional, List
 
 
 class CheckListSerializer(serializers.ModelSerializer):
+    task = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_completed = serializers.BooleanField(required=False, default=False)
+
     class Meta:
         model = CheckList
         fields = '__all__'
@@ -62,6 +66,30 @@ class TaskSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Board must belong to the assigned project.')
         return data
+
+    def create(self, validated_data):
+        checklists_data = validated_data.pop('checklists', [])
+        task = Task.objects.create(**validated_data)
+        for checklist in checklists_data:
+            CheckList.objects.create(task=task, **checklist)
+        return task
+
+    def update(self, instance, validated_data):
+        checklists_data = validated_data.pop('checklists', [])
+        # Get ids of all checklist that exists
+        checklists_ids = [checklist['id']
+                          for checklist in checklists_data if 'id' in checklists_data]
+
+        # Delete all checklists in the current task that no longer exist
+        instance.checklists.filter(~Q(id__in=checklists_ids)).delete()
+
+        # Update or create checklists
+        for checklist_data in checklist_data:
+            CheckList.objects.update_or_create(
+                id=checklist_data.get('id'), task=instance, defaults=checklist_data
+            )
+
+        instance = super().update(instance, validated_data)
 
 
 class TaskListSerializer(serializers.ModelSerializer):
