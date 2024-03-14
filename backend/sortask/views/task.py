@@ -54,9 +54,6 @@ class TaskViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        print('isntance ')
-        print(instance)
-
         response = check_permission(self.request.user, instance.project_id)
 
         if response:
