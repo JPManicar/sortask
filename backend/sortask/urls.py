@@ -15,8 +15,6 @@ projects_router.register(r'members', MemberViewSet, basename='project-members')
 
 # Tasks
 tasks_router = routers.NestedSimpleRouter(router, r'tasks', lookup='task')
-tasks_router.register(r'checklists', ChecklistViewSet,
-                      basename='task-checklists')
 tasks_router.register(r'comments', CommentViewSet, basename='task-comments')
 
 urlpatterns = [
