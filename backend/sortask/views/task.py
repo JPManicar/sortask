@@ -52,17 +52,17 @@ class TaskViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
-        project_id = check_project_id(request)
+        instance = self.get_object()
 
-        if isinstance(project_id, Response):
-            return project_id
+        print('isntance ')
+        print(instance)
 
-        response = check_permission(self.request.user, project_id)
+        response = check_permission(self.request.user, instance.project_id)
 
         if response:
             return response
 
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+        serializer = self.get_serializer(instance)
 
         return Response(serializer.data)
 
@@ -74,19 +74,24 @@ class TaskViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = Task.objects.none()
 
-        project_id = check_project_id(self.request)
-        if isinstance(project_id, Response):
-            return project_id
+        if self.action == 'list':
+            project_id = check_project_id(self.request)
+            if isinstance(project_id, Response):
+                return project_id
 
-        queryset = queryset.union(Task.objects.filter(
-            project=project_id, project__members__user=self.request.user))
+            queryset = queryset.union(Task.objects.filter(
+                project=project_id, project__members__user=self.request.user))
 
-        assignee_ids = self.request.query_params.getlist('assignee_ids')
-        if assignee_ids:
-            # Convert string list to integer list for filtering
-            assignee_ids = [int(id) for id in assignee_ids]
-            queryset = queryset.union(
-                Task.objects.filter(assignee__id__in=assignee_ids))
+            assignee_ids = self.request.query_params.getlist('assignee_ids')
+            if assignee_ids:
+                # Convert string list to integer list for filtering
+                assignee_ids = [int(id) for id in assignee_ids]
+                queryset = queryset.union(
+                    Task.objects.filter(assignee__id__in=assignee_ids))
+
+        if self.action == 'retrieve':
+            pk = self.kwargs.get('pk')
+            queryset = Task.objects.filter(pk=pk)
 
         return queryset
 
