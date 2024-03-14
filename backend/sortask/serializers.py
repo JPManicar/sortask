@@ -21,6 +21,8 @@ class TaskSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         queryset=get_user_model().objects.all())
 
+    checklists = CheckListSerializer(many=True)
+
     board = serializers.PrimaryKeyRelatedField(
         queryset=Board.objects.all()  # Limit allowed boards
     )
