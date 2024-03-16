@@ -15,7 +15,7 @@ class TaskViewSet(ModelViewSet):
     def get_serializer_class(self):
         return TaskListSerializer if self.action == 'list' else TaskSerializer
 
-    def check_project_id(request):
+    def check_project_id(self, request):
         project_id = request.query_params.get('project_id')
         if not project_id:
             return Response({'error': 'parameter project_id is required'}, status=status.HTTP_400_BAD_REQUEST)
