@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
-from .models import Member
+from .models import Member, Project
 
 
 def check_permission(user, project_id):
@@ -9,3 +9,7 @@ def check_permission(user, project_id):
     if not has_permission:
         return Response({'error': 'You don\'t have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
     return None
+
+
+def owns_project(user, project_id):
+    return Project.objects.filter(id=project_id, created_by=user).exists()
