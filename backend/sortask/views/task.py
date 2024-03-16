@@ -92,7 +92,7 @@ class TaskViewSet(ModelViewSet):
 
         return queryset
 
-    def destroy(self, request):
+    def delete(self, request):
         project_id = check_project_id(request)
 
         if isinstance(project_id, Response):
