@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..models import Project, ProjectInvitation, Member
+from ..permissions import owns_project
 
 
 class ProjectInvitationViewSet(ViewSet):
@@ -26,6 +27,11 @@ class ProjectInvitationViewSet(ViewSet):
         return Response({'message': f'You\'ve successfully joined the project {project.title}'}, status=status.HTTP_201_CREATED)
 
     def get_invite_link(self, request, project_id):
+        is_project_owner = owns_project(request.user, project_id)
+
+        if not is_project_owner:
+            return Response({'error': "You dont' have permission to get invite link"}, status=status.HTTP_403_FORBIDDEN)
+
         project = Project.objects.filter(id=project_id).first()
         if not project:
             return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
