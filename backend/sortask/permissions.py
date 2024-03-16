@@ -12,4 +12,5 @@ def check_permission(user, project_id):
 
 
 def owns_project(user, project_id):
+    print(f'user id: {user.id}\nproject_id: {project_id}\n{Project.objects.filter(id=project_id, created_by=user).exists()}')
     return Project.objects.filter(id=project_id, created_by=user).exists()

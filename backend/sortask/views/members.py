@@ -11,13 +11,16 @@ class MemberViewSet(ModelViewSet):
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Get the project ID from the URL
-        project_pk = self.kwargs.get('project_pk')
-        if project_pk:
-            return self.queryset.filter(project_id=project_pk)
+    # def get_queryset(self):
+    #     queryset = Member.objects.none()
+    #     # Get the project ID from the URL
 
-        return Response({[]})
+    #     if self.action == ''
+    #     project_pk = self.kwargs.get('project_pk')
+    #     if project_pk:
+    #         return queryset.filter(project_id=project_pk)
+
+    #     return queryset
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
