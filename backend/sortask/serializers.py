@@ -6,12 +6,11 @@ from typing import Optional, List
 
 
 class CheckListSerializer(serializers.ModelSerializer):
-    task = serializers.PrimaryKeyRelatedField(read_only=True)
     is_completed = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = CheckList
-        fields = '__all__'
+        fields = ['is_completed', 'content']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -76,20 +75,18 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         checklists_data = validated_data.pop('checklists', [])
-        # Get ids of all checklist that exists
-        checklists_ids = [checklist['id']
-                          for checklist in checklists_data if 'id' in checklists_data]
 
-        # Delete all checklists in the current task that no longer exist
-        instance.checklists.filter(~Q(id__in=checklists_ids)).delete()
+        instance.checklists.all().delete()
 
         # Update or create checklists
-        for checklist_data in checklist_data:
+        for checklist_data in checklists_data:
             CheckList.objects.update_or_create(
                 id=checklist_data.get('id'), task=instance, defaults=checklist_data
             )
 
         instance = super().update(instance, validated_data)
+
+        return instance
 
 
 class TaskListSerializer(serializers.ModelSerializer):

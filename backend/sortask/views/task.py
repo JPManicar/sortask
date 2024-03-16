@@ -86,7 +86,7 @@ class TaskViewSet(ModelViewSet):
                 queryset = queryset.union(
                     Task.objects.filter(assignee__id__in=assignee_ids))
 
-        if self.action == 'retrieve':
+        else:
             pk = self.kwargs.get('pk')
             queryset = Task.objects.filter(pk=pk)
 
