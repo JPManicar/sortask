@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import Board
 from ..serializers import BoardSerializer
-from ..utils import check_permission
+from ..permissions import check_permission
 
 
 class BoardViewSet(ModelViewSet):

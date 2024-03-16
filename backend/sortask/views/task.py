@@ -4,7 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from ..models import Task
 from ..serializers import TaskSerializer, TaskListSerializer
-from ..utils import check_permission
+from ..permissions import check_permission
 
 
 class TaskViewSet(ModelViewSet):
