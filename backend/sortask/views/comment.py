@@ -13,8 +13,17 @@ class CommentViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        task_id = self.kwargs['task_pk']
-        return Comment.objects.filter(task_id=task_id)
+        queryset = Comment.objects.none()
+
+        if self.action == 'list':
+            task_id = self.kwargs['task_pk']
+            queryset = queryset.union(Comment.objects.filter(task_id=task_id))
+
+        else:
+            queryset = queryset.union(
+                Comment.objects.filter(id=self.kwargs.get('pk')))
+
+        return queryset
 
     def is_comment_creator(self, request):
         comment_id = self.kwargs.get('pk')
@@ -39,3 +48,22 @@ class CommentViewSet(ModelViewSet):
 
         serializer.save(task_id=kwargs.get('task_pk'))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        is_creator = self.is_comment_creator(request)
+
+        if not is_creator:
+            return Response({'error': "You don't have permission to update this project"}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, pk):
+        is_creator = self.is_comment_creator(request)
+
+        if not is_creator:
+            return Response({'error': "You don't have permission to update this project"}, status=status.HTTP_403_FORBIDDEN)
+
+        comment = self.get_object()
+        comment.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
