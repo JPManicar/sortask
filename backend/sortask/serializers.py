@@ -14,6 +14,10 @@ class CheckListSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=get_user_model().objects.all())
+
     class Meta:
         model = Comment
         fields = '__all__'
