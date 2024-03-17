@@ -41,7 +41,7 @@ class BoardViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    def retrieve(self, request, project_pk):
+    def retrieve(self, request, project_pk, pk):
         response = check_permission(self.request.user, project_pk)
 
         if response:
@@ -61,5 +61,15 @@ class BoardViewSet(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
-        project_id = self.kwargs['project_pk']
-        return Board.objects.filter(project_id=project_id)
+        queryset = Board.objects.none()
+
+        if self.action == 'list':
+            project_id = self.kwargs['project_pk']
+            queryset = queryset.union(
+                Board.objects.filter(project_id=project_id))
+
+        else:
+            queryset = queryset.union(
+                Board.objects.filter(id=self.kwargs.get('pk')))
+
+        return queryset
