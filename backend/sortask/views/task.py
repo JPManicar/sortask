@@ -98,6 +98,16 @@ class TaskViewSet(ModelViewSet):
 
         return queryset
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        response = check_permission(self, request.user, instance.project_id)
+
+        if response:
+            return response
+
+        return super().update(request, *args, **kwargs)
+
     def delete(self, request):
         project_id = self.check_project_id(request)
 

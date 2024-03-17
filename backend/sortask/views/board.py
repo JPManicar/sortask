@@ -51,6 +51,15 @@ class BoardViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
+    def update(self, request, *args, **kwargs):
+        response = check_permission(
+            self.request.user, kwargs.get['project_pk'])
+
+        if response:
+            return response
+
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         response = check_permission(
             self.request.user, self.kwargs['project_pk'])
