@@ -5,6 +5,17 @@ from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment,
 from typing import Optional, List
 
 
+class UserFullNameSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    def get_full_name(self, obj):
+        return f'{obj.first_name} {obj.last_name}'
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'full_name']
+
+
 class CheckListSerializer(serializers.ModelSerializer):
     is_completed = serializers.BooleanField(required=False, default=False)
 
@@ -27,6 +38,19 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CommentListSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        return f'{obj.user.first_name} {obj.user.last_name}'
+
+    task = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'task', 'updated_at']
+
+
 class TaskSerializer(serializers.ModelSerializer):
     created_by = serializers.PrimaryKeyRelatedField(
         default=serializers.CurrentUserDefault(),
@@ -40,6 +64,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=get_user_model().objects.all(), required=False)
+
+    comments = CommentListSerializer(many=True)
 
     class Meta:
         model = Task
@@ -140,17 +166,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title']
-
-
-class UserFullNameSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-
-    def get_full_name(self, obj):
-        return f'{obj.first_name} {obj.last_name}'
-
-    class Meta:
-        model = get_user_model()
-        fields = ['id', 'full_name']
 
 
 class MemberSerializer(serializers.ModelSerializer):
