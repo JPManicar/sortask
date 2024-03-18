@@ -55,7 +55,7 @@ class CommentViewSet(ModelViewSet):
 
         return super().update(request, *args, **kwargs)
 
-    def destroy(self, request, pk):
+    def destroy(self, request, *args, **kwargs):
         is_creator = self.is_comment_creator(request)
 
         if not is_creator:
