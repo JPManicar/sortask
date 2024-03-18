@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Comment
+from ..models import Comment, Task
 from ..serializers import CommentSerializer
 from ..permissions import check_permission
 
@@ -35,16 +35,14 @@ class CommentViewSet(ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        task_id = kwargs.get('task_pk')
+        task = Task.objects.filter(id=task_id).first()
+
         is_not_member = check_permission(
-            request.user, serializer.data.get('project'))
+            request.user, task.project)
 
         if is_not_member:
             return is_not_member
-
-        response = self.is_comment_creator(request.user, kwargs.get('pk'))
-
-        if response:
-            return response
 
         serializer.save(task_id=kwargs.get('task_pk'))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
