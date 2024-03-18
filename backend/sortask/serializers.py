@@ -144,15 +144,11 @@ class BoardSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(
-        default=serializers.CurrentUserDefault(),
-        queryset=get_user_model().objects.all())
-
-    boards = BoardAndTaskSerializer(many=True, read_only=True)
+class MemberSerializer(serializers.ModelSerializer):
+    user = UserFullNameSerializer(read_only=True)
 
     class Meta:
-        model = Project
+        model = Member
         fields = '__all__'
 
 
@@ -168,9 +164,13 @@ class ProjectListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
 
 
-class MemberSerializer(serializers.ModelSerializer):
-    user = UserFullNameSerializer(read_only=True)
+class ProjectSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=get_user_model().objects.all())
+
+    boards = BoardAndTaskSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Member
+        model = Project
         fields = '__all__'
