@@ -20,6 +20,7 @@ class Project(models.Model):
 class ProjectInvitation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, unique=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
 
 
 class Board(models.Model):
