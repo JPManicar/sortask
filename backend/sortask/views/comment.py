@@ -13,15 +13,14 @@ class CommentViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Comment.objects.none()
+        queryset = super().get_queryset()
 
         if self.action == 'list':
             task_id = self.kwargs['task_pk']
-            queryset = queryset.union(Comment.objects.filter(task_id=task_id))
+            queryset = queryset.filter(task_id=task_id)
 
         else:
-            queryset = queryset.union(
-                Comment.objects.filter(id=self.kwargs.get('pk')))
+            queryset = queryset.filter(id=self.kwargs.get('pk'))
 
         return queryset
 

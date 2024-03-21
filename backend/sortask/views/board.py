@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import Board
-from ..serializers import BoardSerializer
+from ..serializers import BoardSerializer, BoardAndTaskSerializer
 from ..permissions import check_permission
 
 
@@ -47,7 +47,7 @@ class BoardViewSet(ModelViewSet):
         if response:
             return response
 
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+        serializer = BoardAndTaskSerializer(self.get_queryset(), many=True)
 
         return Response(serializer.data)
 
@@ -70,15 +70,13 @@ class BoardViewSet(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = Board.objects.none()
+        queryset = super().get_queryset()
 
         if self.action == 'list':
             project_id = self.kwargs['project_pk']
-            queryset = queryset.union(
-                Board.objects.filter(project_id=project_id))
+            queryset = queryset.filter(project_id=project_id)
 
         else:
-            queryset = queryset.union(
-                Board.objects.filter(id=self.kwargs.get('pk')))
+            queryset = queryset.filter(id=self.kwargs.get('pk'))
 
         return queryset

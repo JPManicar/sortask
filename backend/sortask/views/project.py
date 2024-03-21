@@ -45,15 +45,14 @@ class ProjectViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
-        queryset = Project.objects.none()
+        queryset = super().get_queryset()
 
         if self.action == 'list':
             user = self.request.user
-            queryset = queryset.union(
-                Project.objects.filter(members__user=user))
+            queryset = queryset.filter(members__user=user)
 
         else:
             pk = self.kwargs.get('pk')
-            queryset = queryset.union(Project.objects.filter(id=pk))
+            queryset = queryset.filter(id=pk)
 
         return queryset
