@@ -67,7 +67,7 @@ class TaskSerializer(serializers.ModelSerializer):
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=get_user_model().objects.all(), required=False)
 
-    comments = CommentListSerializer(many=True)
+    comments = CommentListSerializer(many=True, required=False)
 
     class Meta:
         model = Task
