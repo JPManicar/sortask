@@ -2,15 +2,25 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+import django_filters
 from ..models import Task
 from ..serializers import TaskSerializer, TaskListSerializer
 from ..permissions import check_permission
+
+
+class TaskFilter(django_filters.FilterSet):
+    title = django_filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = Task
+        fields = ['title']
 
 
 class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    filterset_class = TaskFilter
 
     def get_serializer_class(self):
         return TaskListSerializer if self.action == 'list' else TaskSerializer
@@ -75,26 +85,25 @@ class TaskViewSet(ModelViewSet):
         return instance
 
     def get_queryset(self):
-        queryset = Task.objects.none()
+        queryset = super().get_queryset()
+        queryset = self.filter_queryset(queryset)
 
         if self.action == 'list':
             project_id = self.check_project_id(self.request)
             if isinstance(project_id, Response):
                 return project_id
 
-            queryset = queryset.union(Task.objects.filter(
-                project=project_id, project__members__user=self.request.user))
+            queryset = queryset.filter(
+                project=project_id, project__members__user=self.request.user)
 
             assignee_ids = self.request.query_params.getlist('assignee_ids')
             if assignee_ids:
-                # Convert string list to integer list for filtering
                 assignee_ids = [int(id) for id in assignee_ids]
-                queryset = queryset.union(
-                    Task.objects.filter(assignee__id__in=assignee_ids))
+                queryset = queryset.filter(assignee__id__in=assignee_ids)
 
         else:
             pk = self.kwargs.get('pk')
-            queryset = Task.objects.filter(pk=pk)
+            queryset = queryset.filter(pk=pk)
 
         return queryset
 
