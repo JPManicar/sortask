@@ -66,3 +66,11 @@ class Member(models.Model):
         Project, on_delete=models.CASCADE, related_name='members')
     user = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name='projects')
+
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(
+        get_user_model(), on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
