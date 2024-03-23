@@ -30,4 +30,7 @@ urlpatterns = [
     path('accept-invite/<str:token>/',
          ProjectInvitationViewSet.as_view({'get': 'accept_invite'}), name='accept_invite'),
 
+    path('notifications/', NotificationAPIView.as_view()),
+    path('notifications/<int:id>/', NotificationAPIView.as_view()),
+
 ]
