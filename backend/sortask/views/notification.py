@@ -16,16 +16,22 @@ class NotificationAPIView(APIView):
 
         return Response(serializer.data)
 
-    def patch(self, request, id):
-        notification = Notification.objects.filter(id=id).first()
+    def patch(self, request, id=None):
+        if id:
+            notification = Notification.objects.filter(id=id).first()
 
-        if not notification:
-            return Response({"detail": "Not found."})
+            if not notification:
+                return Response({"detail": "Not found."})
 
-        is_read = request.data.get('is_read', None)
+            is_read = request.data.get('is_read', None)
 
-        if is_read:
-            notification.is_read = is_read
-            notification.save()
+            if is_read:
+                notification.is_read = is_read
+                notification.save()
 
-        return Response(NotificationSerializer(notification).data)
+            return Response(NotificationSerializer(notification).data)
+
+        else:
+            user = request.user
+            user.notifications.update(is_read=True)
+            return Response({'status': 'success', 'message': 'All notifications marked as read'})
