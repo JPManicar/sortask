@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 import django_filters
-from ..models import Task
+from ..models import Task, Notification
 from ..serializers import TaskSerializer, TaskListSerializer
 from ..permissions import check_permission
 
@@ -110,10 +110,16 @@ class TaskViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        response = check_permission(self, request.user, instance.project_id)
+        response = check_permission(request.user, instance.project_id)
 
         if response:
             return response
+
+        if instance.assignee:
+            Notification.objects.create(
+                recipient=instance.assignee,
+                message=f"Task '{instance.title}' has been updated."
+            )
 
         return super().update(request, *args, **kwargs)
 

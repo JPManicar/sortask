@@ -3,21 +3,15 @@ from django.dispatch import receiver
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from .models import Task, Notification
+from .models import Notification
 
 
-@receiver(post_save, sender=Task)
-def task_updated(sender, instance, created, **kwargs):
-    if created or instance.has_changes():  # Check for significant changes if needed
-        if instance.assignee:
-            notification = Notification.objects.create(
-                user=instance.assignee,
-                task=instance,
-                message=f"Task '{instance.title}' has been updated."
-            )
-            async_to_sync(get_channel_layer().group_send)(
-                f"notifications_{instance.assignee.id}", {
-                    'type': 'send_notification',
-                    'message': notification.message,
-                }
-            )
+@receiver(post_save, sender=Notification)
+def notification_created(sender, instance, created, **kwargs):
+    async_to_sync(get_channel_layer().group_send)(
+        f"notifications_{instance.recipient.id}", {
+            'type': 'send_notification',
+            'message': instance.message,
+            'timestamp': instance.timestamp
+        }
+    )
