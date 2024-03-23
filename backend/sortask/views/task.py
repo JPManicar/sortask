@@ -35,6 +35,8 @@ class TaskViewSet(ModelViewSet):
     def assign_user(self, request, pk):
         instance = self.get_object()
 
+        previous_assignee = instance.assignee
+
         response = check_permission(self.request.user, instance.project_id)
 
         if response:
@@ -45,22 +47,30 @@ class TaskViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         assignee_id = request.data['assignee']
-        assignee = get_user_model().objects.filter(id=assignee_id).first()
 
-        is_project_member = Member.objects.filter(
-            user=assignee, project_id=instance.project_id).exists()
+        if previous_assignee and previous_assignee.id == assignee_id:
+            return Response({'message': 'Assignee is already assigned to this task'})
 
-        if not is_project_member:
-            return Response({
-                'error': 'Assignee is not a member of this project'
-            })
+        if assignee_id:
+
+            assignee = get_user_model().objects.filter(id=assignee_id).first()
+
+            is_project_member = Member.objects.filter(
+                user=assignee, project_id=instance.project_id).exists()
+
+            if not is_project_member:
+                return Response({
+                    'error': 'Assignee is not a member of this project'
+                })
 
         serializer.save(assignee=assignee)
 
-        if assignee != request.user:
+        if assignee_id and assignee != request.user:
+            user_full_name = f"{request.user.first_name} {request.user.last_name}"
+
             Notification.objects.create(
                 recipient=assignee,
-                message=f"Task '{instance.title}' has been assigned to you by {request.user.first_name} {request.user.last_name}."
+                message=f"Task '{instance.title}' has been assigned to you by {user_full_name}."
             )
 
         return Response(serializer.data)
