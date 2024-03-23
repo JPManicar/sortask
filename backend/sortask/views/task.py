@@ -25,7 +25,7 @@ class TaskViewSet(ModelViewSet):
     def get_serializer_class(self):
         return TaskListSerializer if self.action == 'list' else TaskSerializer
 
-    def check_project_id(self, request):
+    def get_project_id_or_error(self, request):
         project_id = request.query_params.get('project_id')
         if not project_id:
             return Response({'error': 'parameter project_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -53,7 +53,7 @@ class TaskViewSet(ModelViewSet):
             return Response(new_error, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request):
-        project_id = self.check_project_id(request)
+        project_id = self.get_project_id_or_error(request)
 
         if isinstance(project_id, Response):
             return project_id
@@ -89,7 +89,7 @@ class TaskViewSet(ModelViewSet):
         queryset = self.filter_queryset(queryset)
 
         if self.action == 'list':
-            project_id = self.check_project_id(self.request)
+            project_id = self.get_project_id_or_error(self.request)
             if isinstance(project_id, Response):
                 return project_id
 
@@ -124,7 +124,7 @@ class TaskViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     def delete(self, request):
-        project_id = self.check_project_id(request)
+        project_id = self.get_project_id_or_error(request)
 
         if isinstance(project_id, Response):
             return project_id
