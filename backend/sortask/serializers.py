@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member
+from .models import Project, ProjectInvitation, Board, Task, CheckList, Comment, Member, Notification
 from drf_spectacular.utils import extend_schema_field
 
 
@@ -15,6 +15,14 @@ class UserFullNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['id', 'full_name']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    timestamp = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'timestamp', 'is_read']
 
 
 class CheckListSerializer(serializers.ModelSerializer):

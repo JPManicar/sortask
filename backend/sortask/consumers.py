@@ -23,9 +23,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(f"notifications_{user.id}", self.channel_name)
 
     async def send_notification(self, event):
-        message = event['message']
-        timestamp = event['timestamp']
-        await self.send(text_data=json.dumps({'message': message, 'timestamp': timestamp.isoformat()}))
+        data = event['data']
+        await self.send(text_data=json.dumps({'new_notif': data}))
 
     @database_sync_to_async
     def get_user(self):
