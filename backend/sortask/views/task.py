@@ -2,8 +2,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
 import django_filters
-from ..models import Task, Notification
+from ..models import Task, Notification, Member
 from ..serializers import TaskSerializer, TaskListSerializer
 from ..permissions import check_permission
 
@@ -30,6 +31,39 @@ class TaskViewSet(ModelViewSet):
         if not project_id:
             return Response({'error': 'parameter project_id is required'}, status=status.HTTP_400_BAD_REQUEST)
         return project_id
+
+    def assign_user(self, request, pk):
+        instance = self.get_object()
+
+        response = check_permission(self.request.user, instance.project_id)
+
+        if response:
+            return response
+
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        assignee_id = request.data['assignee']
+        assignee = get_user_model().objects.filter(id=assignee_id).first()
+
+        is_project_member = Member.objects.filter(
+            user=assignee, project_id=instance.project_id).exists()
+
+        if not is_project_member:
+            return Response({
+                'error': 'Assignee is not a member of this project'
+            })
+
+        serializer.save(assignee=assignee)
+
+        if assignee != request.user:
+            Notification.objects.create(
+                recipient=assignee,
+                message=f"Task '{instance.title}' has been assigned to you by {request.user.first_name} {request.user.last_name}."
+            )
+
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -114,12 +148,6 @@ class TaskViewSet(ModelViewSet):
 
         if response:
             return response
-
-        if instance.assignee:
-            Notification.objects.create(
-                recipient=instance.assignee,
-                message=f"Task '{instance.title}' has been updated."
-            )
 
         return super().update(request, *args, **kwargs)
 
