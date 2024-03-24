@@ -55,11 +55,11 @@ class CommentViewSet(ModelViewSet):
             recipients.append(task.created_by)
 
         if recipients:
-            Notification.objects.bulk_create([
-                Notification(
-                    recipient=recipient, message=f"{user_full_name} commented in `{task.title}`")
-                for recipient in recipients
-            ])
+            for recipient in recipients:
+                Notification.objects.create(
+                    recipient=recipient,
+                    message=f"{user_full_name} commented in `{task.title}`"
+                )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

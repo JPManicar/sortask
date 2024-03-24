@@ -173,11 +173,20 @@ class TaskViewSet(ModelViewSet):
 
             message = f'{user_full_name} updated the following [{", ".join(updated_fields)}] in the Task `{instance.title}`'
 
-            if instance.created_by == request.user:
-                Notification.objects.create(
-                    recipient=instance.created_by,
-                    message=message
-                )
+            recipients = []
+
+            if instance.created_by != request.user:
+                recipients.append(instance.created_by)
+
+            if instance.assignee and instance.assignee != request.user and instance.assignee != instance.created_by:
+                recipients.append(instance.assignee)
+
+            if recipients:
+                for recipient in recipients:
+                    Notification.objects.create(
+                        recipient=recipient,
+                        message=message
+                    )
 
             return super().update(request, *args, **kwargs)
 
