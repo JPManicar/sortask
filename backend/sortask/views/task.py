@@ -159,6 +159,8 @@ class TaskViewSet(ModelViewSet):
         if response:
             return response
 
+        request.data.pop('assignee', None)
+
         return super().update(request, *args, **kwargs)
 
     def delete(self, request):
