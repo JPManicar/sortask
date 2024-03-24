@@ -22,6 +22,10 @@ urlpatterns = [
     path('', include(projects_router.urls)),
     path('', include(tasks_router.urls)),
 
+    # Assign user a task
+    path('tasks/<int:pk>/assign/',
+         TaskViewSet.as_view({'post': 'assign_user'}), name='task-assign'),
+
     # Get Project Invite Link
     path('projects/<int:project_id>/invite/',
          ProjectInvitationViewSet.as_view({'get': 'get_invite_link'}), name='project_invite'),
@@ -30,6 +34,7 @@ urlpatterns = [
     path('accept-invite/<str:token>/',
          ProjectInvitationViewSet.as_view({'get': 'accept_invite'}), name='accept_invite'),
 
+    # Notifications
     path('notifications/', NotificationAPIView.as_view()),
     path('notifications/<int:id>/', NotificationAPIView.as_view()),
 

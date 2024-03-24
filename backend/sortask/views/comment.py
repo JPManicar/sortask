@@ -2,8 +2,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Comment, Task
-from ..serializers import CommentSerializer
+from ..models import Comment, Task, Notification
+from ..serializers import CommentSerializer, UserFullNameSerializer
 from ..permissions import check_permission
 
 
@@ -44,6 +44,24 @@ class CommentViewSet(ModelViewSet):
             return is_not_member
 
         serializer.save(task_id=kwargs.get('task_pk'))
+
+        user_full_name = f'{request.user.first_name} {request.user.last_name}'
+        recipients = []
+
+        if task.assignee and task.assignee != request.user:
+            recipients.append(task.assignee)
+
+        if task.created_by != request.user and task.created_by not in recipients:
+            recipients.append(task.created_by)
+
+        if recipients:
+            for recipient in recipients:
+                Notification.objects.create(
+                    recipient=recipient,
+                    message=f"{user_full_name} commented in `{task.title}`",
+                    task=task
+                )
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):

@@ -2,9 +2,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
 import django_filters
-from ..models import Task, Notification
-from ..serializers import TaskSerializer, TaskListSerializer
+from ..models import Task, Notification, Member
+from ..serializers import TaskSerializer, TaskListSerializer, UserFullNameSerializer
 from ..permissions import check_permission
 
 
@@ -30,6 +31,50 @@ class TaskViewSet(ModelViewSet):
         if not project_id:
             return Response({'error': 'parameter project_id is required'}, status=status.HTTP_400_BAD_REQUEST)
         return project_id
+
+    def assign_user(self, request, pk):
+        instance = self.get_object()
+
+        previous_assignee = instance.assignee
+
+        response = check_permission(self.request.user, instance.project_id)
+
+        if response:
+            return response
+
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        assignee_id = request.data['assignee']
+
+        if previous_assignee and previous_assignee.id == assignee_id:
+            return Response({'message': 'Assignee is already assigned to this task'})
+
+        if assignee_id:
+
+            assignee = get_user_model().objects.filter(id=assignee_id).first()
+
+            is_project_member = Member.objects.filter(
+                user=assignee, project_id=instance.project_id).exists()
+
+            if not is_project_member:
+                return Response({
+                    'error': 'Assignee is not a member of this project'
+                })
+
+        serializer.save(assignee=assignee)
+
+        if assignee_id and assignee != request.user:
+            user_full_name = f"{request.user.first_name} {request.user.last_name}"
+
+            Notification.objects.create(
+                recipient=assignee,
+                message=f"Task '{instance.title}' has been assigned to you by {user_full_name}.",
+                task=instance
+            )
+
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -115,13 +160,41 @@ class TaskViewSet(ModelViewSet):
         if response:
             return response
 
-        if instance.assignee:
-            Notification.objects.create(
-                recipient=instance.assignee,
-                message=f"Task '{instance.title}' has been updated."
-            )
+        request.data.pop('assignee', None)
 
-        return super().update(request, *args, **kwargs)
+        updated_fields = []
+
+        for key, value in request.data.items():
+            current_val = getattr(instance, key, None)
+            if current_val and value != current_val:
+                updated_fields.append(key)
+
+        if updated_fields:
+            user_full_name = f'{request.user.first_name} {request.user.last_name}'
+
+            message = f'{user_full_name} updated the following [{", ".join(updated_fields)}] in the Task `{instance.title}`'
+
+            recipients = []
+
+            if instance.created_by != request.user:
+                recipients.append(instance.created_by)
+
+            if instance.assignee and instance.assignee != request.user and instance.assignee != instance.created_by:
+                recipients.append(instance.assignee)
+
+            if recipients:
+                for recipient in recipients:
+                    Notification.objects.create(
+                        recipient=recipient,
+                        message=message,
+                        task=instance
+                    )
+
+            return super().update(request, *args, **kwargs)
+
+        return Response({
+            'message': 'The request did not contain any changes. Task remains unchanged.'
+        })
 
     def delete(self, request):
         project_id = self.get_project_id_or_error(request)

@@ -74,3 +74,6 @@ class Notification(models.Model):
     message = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    task = models.ForeignKey(
+        Task, on_delete=models.SET_NULL, related_name='notifications', null=True
+    )
