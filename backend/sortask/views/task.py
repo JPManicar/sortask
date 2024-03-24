@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 import django_filters
 from ..models import Task, Notification, Member
-from ..serializers import TaskSerializer, TaskListSerializer
+from ..serializers import TaskSerializer, TaskListSerializer, UserFullNameSerializer
 from ..permissions import check_permission
 
 
@@ -161,7 +161,29 @@ class TaskViewSet(ModelViewSet):
 
         request.data.pop('assignee', None)
 
-        return super().update(request, *args, **kwargs)
+        updated_fields = []
+
+        for key, value in request.data.items():
+            current_val = getattr(instance, key, None)
+            if current_val and value != current_val:
+                updated_fields.append(key)
+
+        if updated_fields:
+            user_full_name = f'{request.user.first_name} {request.user.last_name}'
+
+            message = f'{user_full_name} updated the following [{", ".join(updated_fields)}] in the Task `{instance.title}`'
+
+            if instance.created_by == request.user:
+                Notification.objects.create(
+                    recipient=instance.created_by,
+                    message=message
+                )
+
+            return super().update(request, *args, **kwargs)
+
+        return Response({
+            'message': 'The request did not contain any changes. Task remains unchanged.'
+        })
 
     def delete(self, request):
         project_id = self.get_project_id_or_error(request)

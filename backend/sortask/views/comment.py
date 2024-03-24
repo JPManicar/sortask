@@ -45,7 +45,7 @@ class CommentViewSet(ModelViewSet):
 
         serializer.save(task_id=kwargs.get('task_pk'))
 
-        user = UserFullNameSerializer(request.user)
+        user_full_name = f'{request.user.first_name} {request.user.last_name}'
         recipients = []
 
         if task.assignee and task.assignee != request.user:
@@ -57,7 +57,7 @@ class CommentViewSet(ModelViewSet):
         if recipients:
             Notification.objects.bulk_create([
                 Notification(
-                    recipient=recipient, message=f"{user.full_name} commented in `{task.title}`")
+                    recipient=recipient, message=f"{user_full_name} commented in `{task.title}`")
                 for recipient in recipients
             ])
 
