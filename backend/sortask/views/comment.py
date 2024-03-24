@@ -58,7 +58,8 @@ class CommentViewSet(ModelViewSet):
             for recipient in recipients:
                 Notification.objects.create(
                     recipient=recipient,
-                    message=f"{user_full_name} commented in `{task.title}`"
+                    message=f"{user_full_name} commented in `{task.title}`",
+                    task=task
                 )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

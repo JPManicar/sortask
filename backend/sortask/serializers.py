@@ -17,14 +17,6 @@ class UserFullNameSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name']
 
 
-class NotificationSerializer(serializers.ModelSerializer):
-    timestamp = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-
-    class Meta:
-        model = Notification
-        fields = ['id', 'message', 'timestamp', 'is_read']
-
-
 class CheckListSerializer(serializers.ModelSerializer):
     is_completed = serializers.BooleanField(required=False, default=False)
 
@@ -137,6 +129,15 @@ class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'title', 'board', 'assignee']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    timestamp = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    task = TaskListSerializer(read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'timestamp', 'is_read', 'task']
 
 
 class BoardAndTaskSerializer(serializers.ModelSerializer):

@@ -70,7 +70,8 @@ class TaskViewSet(ModelViewSet):
 
             Notification.objects.create(
                 recipient=assignee,
-                message=f"Task '{instance.title}' has been assigned to you by {user_full_name}."
+                message=f"Task '{instance.title}' has been assigned to you by {user_full_name}.",
+                task=instance
             )
 
         return Response(serializer.data)
@@ -185,7 +186,8 @@ class TaskViewSet(ModelViewSet):
                 for recipient in recipients:
                     Notification.objects.create(
                         recipient=recipient,
-                        message=message
+                        message=message,
+                        task=instance
                     )
 
             return super().update(request, *args, **kwargs)
