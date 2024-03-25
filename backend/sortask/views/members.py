@@ -2,18 +2,39 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import F, CharField, Value
+from django.db.models.functions import Concat
 from ..models import Member
 from ..serializers import MemberSerializer
 from ..permissions import check_permission
+import django_filters
+
+
+class MemberFilter(django_filters.FilterSet):
+    email = django_filters.CharFilter(
+        field_name='user__email', lookup_expr='icontains')
+    name = django_filters.CharFilter(method='filter_by_full_name')
+
+    class Meta:
+        model = Member
+        fields = ['email', 'name']
+
+    def filter_by_full_name(self, queryset, name, value):
+        return queryset.annotate(
+            full_name=Concat(
+                'user__first_name', Value(' '), 'user__last_name', output_field=CharField())
+        ).filter(full_name__icontains=value)
 
 
 class MemberViewSet(ModelViewSet):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
+    filterset_class = MemberFilter
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = self.filter_queryset(queryset)
 
         if self.action == 'list':
             project_id = self.kwargs['project_pk']
