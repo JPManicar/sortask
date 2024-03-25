@@ -1,8 +1,9 @@
-from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from django.db.models import F, CharField, Value
+from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from ..models import Member
 from ..serializers import MemberSerializer
@@ -31,6 +32,7 @@ class MemberViewSet(ModelViewSet):
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
     filterset_class = MemberFilter
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -60,6 +62,12 @@ class MemberViewSet(ModelViewSet):
 
         if response:
             return response
+
+        page = self.paginate_queryset(queryset=self.get_queryset())
+
+        if page:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(self.get_queryset(), many=True)
 
