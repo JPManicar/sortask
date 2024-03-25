@@ -11,6 +11,7 @@
 ### Prerequisites
 
 * Python
+* MySQL
 
 ### Backend Setup
 
@@ -41,7 +42,28 @@
     ```bash
     pip install -r requirements.txt
     ```
-5. **Run backend server**
+
+5. **Create sortask Database**
+
+    Exceute the following SQL script in your MySQL environment:
+    ```bash
+    CREATE DATABASE sortask;
+    ```
+
+6. **Go to settings.py**
+    ```bash
+    backend/core/settings.py
+    ```
+
+7. **Change password to your MySQL password in line 97**
+
+
+8. **Run command**
+    ```bash
+    python manage.py migrate
+    ```
+
+9. **Run backend server**
     ```bash
     python manage.py runserver
     ```
